@@ -16,6 +16,7 @@ Options:
 """
 from ast import literal_eval
 from pathlib import Path
+import os.path as ospath
 
 from docopt import docopt
 from collections import OrderedDict
@@ -150,6 +151,24 @@ def evaluate(experiment):
     agent_name, agent_config = agent_config
     agent_config["budget"] = int(budget)
     agent = agent_factory(env, agent_config)
+
+    # Check if the evaluation is already done
+    print("Reading data from {}".format(path))
+    args = docopt(__doc__)
+    if ospath.exists(args["--data_path"]):
+        data_path = Path(args["--data_path"])
+        data_range = args["--range"]
+        df = pd.read_csv(data_path)
+        df = df[~df.agent.isin(['agent'])].apply(pd.to_numeric, errors='ignore')
+        df = df.sort_values(by="agent")
+        if data_range:
+            start, end = data_range.split(':')
+            df = df[df["budget"].between(int(start), int(end))]
+
+        for item in df.values:
+            if item[0] == agent_name and item[1] == budget and item[2] == seed:
+                print("Found agent {} with budget {} on seed {}".format(agent_name, budget, seed))
+                return
 
     # Evaluate
     print("Evaluating agent {} with budget {} on seed {}".format(agent_name, budget, seed))
