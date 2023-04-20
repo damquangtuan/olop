@@ -4,6 +4,7 @@ import numpy as np
 from rl_agents.agents.common.factory import safe_deepcopy_env
 from rl_agents.agents.tree_search.abstract import Node, AbstractTreeSearchAgent, AbstractPlanner
 from rl_agents.utils import hoeffding_upper_bound, kl_upper_bound, laplace_upper_bound, average_return, sample_discrete
+from scipy.optimize import minimize_scalar
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +87,21 @@ class SoftOLOP(AbstractPlanner):
         else:
             raise ValueError("Could not split budget {} with gamma {}".format(self.config["budget"], self.config["gamma"]))
 
+    def compute_visitations(self, node):
+        return node.count
+    def compute_scores(self, values, counts):
+        best_mean = max(values)
+        scores = []
+
+        for i in range(len(values)):
+            res = minimize_scalar(lambda x: - np.sum(np.log(1 - (values[i] - best_mean) * x)),
+                                  bounds=(0, 1 / (1 - best_mean - 1e-2)), method='bounded')
+            x = -res.fun
+            s_a_visits = max(1.0, float(counts[i]))
+            scores.append(-(s_a_visits * x.item() + np.log(s_a_visits)))
+
+        return scores
+
     def run(self, state):
         """
             Run an OLOP episode.
@@ -98,9 +114,14 @@ class SoftOLOP(AbstractPlanner):
         list(Node.breadth_first_search(self.root, operator=self.compute_ucbs, condition=None))
         list(Node.breadth_first_search(self.root, operator=self.compute_u_values, condition=None))
         sequences_upper_bounds = list(map(SoftOLOP.sharpen_b_values, self.leaves))
-        sequences_upper_bounds = np.array(sequences_upper_bounds)
 
-        probs = sequences_upper_bounds/np.sum(sequences_upper_bounds)
+        if self.config["upper_bound"]["type"] == "imed":
+            sequences_counts = list(map(SoftOLOP.compute_visitation_counts, self.leaves))
+            scores = self.compute_scores(sequences_upper_bounds, sequences_counts)
+        else:
+            scores = np.array(sequences_upper_bounds)
+
+        probs = scores/np.sum(scores)
 
         # Pick best sequence of actions
         best_leaf_index = sample_discrete(probs)
@@ -159,6 +180,9 @@ class SoftOLOP(AbstractPlanner):
             node_t = node_t.parent
         return path, node.value
 
+
+    def compute_visitation_counts(self, node):
+        return node.count
     def sharpen_b_values(node):
         """
             Sharpen the upper-bound value of the action sequences at the tree leaves.
@@ -185,10 +209,12 @@ class SoftOLOP(AbstractPlanner):
         elif node.planner.config["upper_bound"]["type"] == "softmax":
             return np.exp(value / temperature)
         elif node.planner.config["upper_bound"]["type"] == "maillard":
-            count = node.count == 0
+            count = node.count
             if count == 0:
                 count = 1
             return np.exp((count/2) * (value) * (value))
+        elif node.planner.config["upper_bound"]["type"] == "imed":
+            return value
 
     def plan(self, state, observation):
         for self.episode in range(self.config['episodes']):
@@ -256,7 +282,8 @@ class SoftOLOPNode(Node):
             self.mu_ucb = kl_upper_bound(self.cumulative_reward, self.count, time,
                                          c=self.planner.config["upper_bound"]["c"])
         elif self.planner.config["upper_bound"]["type"] == "softmax" \
-                or self.planner.config["upper_bound"]["type"] == "maillard":
+                or self.planner.config["upper_bound"]["type"] == "maillard"\
+                or self.planner.config["upper_bound"]["type"] == "imed":
             self.mu_ucb = average_return(self.cumulative_reward, self.count)
         else:
             logger.error("Unknown upper-bound type")

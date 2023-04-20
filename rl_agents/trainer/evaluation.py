@@ -159,6 +159,11 @@ class Evaluation(object):
         previous_observation, action = self.observation, actions[0]
         self.observation, reward, terminal, info = self.monitor.step(action)
 
+        if not 0 <= reward <= 1:
+            print ("reward: " + str(reward))
+            if reward < 0:
+                reward = 0
+
         # Record the experience.
         if self.training:
             try:

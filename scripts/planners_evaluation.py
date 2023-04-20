@@ -75,6 +75,18 @@ def agent_configs():
             "continuation_type": "uniform",
             # "env_preprocessors": [{"method": "simplify"}]
         },
+        "imed-olop": {
+            "__class__": "<class 'rl_agents.agents.tree_search.soft_olop.SoftOLOPAgent'>",
+            "gamma": gamma,
+            "max_depth": 4,
+            "upper_bound": {
+                "type": "imed",
+                "temperature": 1
+            },
+            "lazy_tree_construction": True,
+            "continuation_type": "uniform",
+            # "env_preprocessors": [{"method": "simplify"}]
+        },
         # "olop": {
         #     "__class__": "<class 'rl_agents.agents.tree_search.olop.OLOPAgent'>",
         #     "gamma": gamma,
