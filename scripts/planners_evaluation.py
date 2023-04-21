@@ -43,7 +43,8 @@ def env_configs():
     # return ['configs/CartPoleEnv/env.json']
     # return ['configs/HighwayEnv/env_medium.json']
     # return ['configs/GridWorld/collect.json']
-    return ['configs/GridWorld/empty.json']
+    # return ['configs/GridWorld/empty.json']
+    return ['configs/GridWorld/frozenlake4x4.json']
 
 
 def agent_configs():
@@ -123,17 +124,17 @@ def agent_configs():
             "continuation_type": "uniform",
             # "env_preprocessors": [{"method": "simplify"}]
         },
-        "laplace": {
-            "__class__": "<class 'rl_agents.agents.tree_search.olop.OLOPAgent'>",
-            "gamma": gamma,
-            "upper_bound": {
-                "type": "laplace",
-                "c": 2
-            },
-            "lazy_tree_construction": True,
-            "continuation_type": "uniform",
-            # "env_preprocessors": [{"method": "simplify"}]
-        },
+        # "laplace": {
+        #     "__class__": "<class 'rl_agents.agents.tree_search.olop.OLOPAgent'>",
+        #     "gamma": gamma,
+        #     "upper_bound": {
+        #         "type": "laplace",
+        #         "c": 2
+        #     },
+        #     "lazy_tree_construction": True,
+        #     "continuation_type": "uniform",
+        #     # "env_preprocessors": [{"method": "simplify"}]
+        # },
         "deterministic": {
             "__class__": "<class 'rl_agents.agents.tree_search.deterministic.DeterministicPlannerAgent'>",
             "gamma": gamma,
@@ -178,7 +179,7 @@ def evaluate(experiment):
             df = df[df["budget"].between(int(start), int(end))]
 
         for item in df.values:
-            if item[0] == agent_name and item[1] == budget and item[2] == seed:
+            if item[0] == agent_name and int(item[1]) == budget and item[2] == seed:
                 print("Found agent {} with budget {} on seed {}".format(agent_name, budget, seed))
                 return
 
