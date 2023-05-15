@@ -160,7 +160,7 @@ class Evaluation(object):
         self.observation, reward, terminal, info = self.monitor.step(action)
 
         if not 0 <= reward <= 1:
-            print ("reward: " + str(reward))
+            # print ("reward: " + str(reward))
             if reward < 0:
                 reward = 0
 
@@ -180,7 +180,7 @@ class Evaluation(object):
             - update model
         """
         episode = 0
-        episode_duration = 14  # TODO: use a fixed number of samples instead
+        episode_duration = 4  # TODO: use a fixed number of samples instead
         batch_sizes = near_split(self.num_episodes * episode_duration, size_bins=self.agent.config["batch_size"])
         for batch, batch_size in enumerate(batch_sizes):
             logger.info("[BATCH={}/{}]---------------------------------------".format(batch+1, len(batch_sizes)))
@@ -257,6 +257,7 @@ class Evaluation(object):
         for _ in range(count):
             action = agent.act(state)
             next_state, reward, done, info = env.step(action)
+            reward = (reward - 2) / (10 - 2)
             trajectory.append(Transition(state, action, reward, next_state, done, info))
             if done:
                 state = env.reset()

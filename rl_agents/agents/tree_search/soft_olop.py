@@ -1,5 +1,7 @@
 import logging
 import numpy as np
+from numpy.random import rand
+
 
 from rl_agents.agents.common.factory import safe_deepcopy_env
 from rl_agents.agents.tree_search.abstract import Node, AbstractTreeSearchAgent, AbstractPlanner
@@ -104,7 +106,7 @@ class SoftOLOP(AbstractPlanner):
 
     def run(self, state):
         """
-            Run an OLOP episode.
+            Run an Soft-OLOP episode.
 
             Find the leaf with highest upper bound value, and sample the corresponding action sequence.
 
@@ -121,10 +123,28 @@ class SoftOLOP(AbstractPlanner):
         else:
             scores = np.array(sequences_upper_bounds)
 
-        probs = scores/np.sum(scores)
+        #normalize the softmax distribution
+        probs = scores / np.sum(scores)
 
-        # Pick best sequence of actions
-        best_leaf_index = sample_discrete(probs)
+        #compute the total number of visitations
+        total_count = 0
+        for node in self.leaves:
+            total_count += node.count
+        #compute the epsilon probability
+        nA = len(scores)
+        epsilon = .001
+        para_lambda = epsilon * nA / np.log(total_count + 2)
+        # print("para_lambda" + str(para_lambda))
+        # print("Number of Action: " + str(nA))
+        # print("Horizon: " + str(self.config["horizon"]))
+        random = rand()
+
+        if random > para_lambda:
+            # Pick best sequence of actions
+            best_leaf_index = sample_discrete(probs)
+        else:
+            best_leaf_index = np.random.randint(nA)
+
         best_sequence = list(self.leaves[best_leaf_index].path())
 
         # If the sequence length is shorter than the horizon (which can happen with lazy tree construction),
@@ -192,7 +212,7 @@ class SoftOLOP(AbstractPlanner):
         :param node: a node in the look-ahead tree
         :return:an upper-bound of the sequence value
         """
-        temperature = 0.01
+        temperature = node.planner.config["upper_bound"]["temperature"]
         value = node.value
         # if node.planner.config["upper_bound"] == "full-length":
         #     value = node.value
@@ -251,7 +271,7 @@ class SoftOLOPNode(Node):
 
     def update(self, reward, done):
         if not 0 <= reward <= 1:
-            print ("reward: " + str(reward))
+            # print ("reward: " + str(reward))
             if reward < 0:
                 reward = 0
             # raise ValueError("This planner assumes that all rewards are normalized in [0, 1]")

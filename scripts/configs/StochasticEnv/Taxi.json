@@ -1,0 +1,4 @@
+{
+    "id": "Taxi",
+    "import_module": "gymnasium"
+}

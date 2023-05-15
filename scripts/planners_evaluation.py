@@ -30,7 +30,7 @@ import pandas as pd
 import seaborn as sns
 
 import sys
-sys.path.append('/home/tuandam/Workspaces/rl-agents-state-planning')
+sys.path.append('/home/tuandam/Downloads/rl-agents-state-planning')
 
 from rl_agents.agents.common.factory import load_environment, agent_factory
 from rl_agents.trainer.evaluation import Evaluation
@@ -44,7 +44,10 @@ def env_configs():
     # return ['configs/HighwayEnv/env_medium.json']
     # return ['configs/GridWorld/collect.json']
     # return ['configs/GridWorld/empty.json']
-    return ['configs/GridWorld/frozenlake4x4.json']
+    return ['configs/StochasticEnv/SixArms.json']
+    # return ['configs/StochasticEnv/frozenlake4x4.json']
+    # return ['configs/StochasticEnv/NChain-v0.json']
+    # return ['configs/StochasticEnv/RiverSwim.json']
 
 
 def agent_configs():
@@ -58,60 +61,60 @@ def agent_configs():
             "max_depth": 4,
             "upper_bound": {
                 "type": "softmax",
-                "temperature": 1
+                "temperature": 0.5
             },
             "lazy_tree_construction": True,
             "continuation_type": "uniform",
             # "env_preprocessors": [{"method": "simplify"}]
         },
-        "ms-olop": {
-            "__class__": "<class 'rl_agents.agents.tree_search.soft_olop.SoftOLOPAgent'>",
-            "gamma": gamma,
-            "max_depth": 4,
-            "upper_bound": {
-                "type": "maillard",
-                "temperature": 1
-            },
-            "lazy_tree_construction": True,
-            "continuation_type": "uniform",
-            # "env_preprocessors": [{"method": "simplify"}]
-        },
-        "imed-olop": {
-            "__class__": "<class 'rl_agents.agents.tree_search.soft_olop.SoftOLOPAgent'>",
-            "gamma": gamma,
-            "max_depth": 4,
-            "upper_bound": {
-                "type": "imed",
-                "temperature": 1
-            },
-            "lazy_tree_construction": True,
-            "continuation_type": "uniform",
-            # "env_preprocessors": [{"method": "simplify"}]
-        },
-        # "olop": {
-        #     "__class__": "<class 'rl_agents.agents.tree_search.olop.OLOPAgent'>",
+        # "ms-olop": {
+        #     "__class__": "<class 'rl_agents.agents.tree_search.soft_olop.SoftOLOPAgent'>",
         #     "gamma": gamma,
         #     "max_depth": 4,
         #     "upper_bound": {
-        #         "type": "hoeffding",
-        #         "c": 4
+        #         "type": "maillard",
+        #         "temperature": 1
         #     },
         #     "lazy_tree_construction": True,
         #     "continuation_type": "uniform",
         #     # "env_preprocessors": [{"method": "simplify"}]
         # },
-        "kl-olop": {
+        # "imed-olop": {
+        #     "__class__": "<class 'rl_agents.agents.tree_search.soft_olop.SoftOLOPAgent'>",
+        #     "gamma": gamma,
+        #     "max_depth": 4,
+        #     "upper_bound": {
+        #         "type": "imed",
+        #         "temperature": 1
+        #     },
+        #     "lazy_tree_construction": True,
+        #     "continuation_type": "uniform",
+        #     # "env_preprocessors": [{"method": "simplify"}]
+        # },
+        "olop": {
             "__class__": "<class 'rl_agents.agents.tree_search.olop.OLOPAgent'>",
             "gamma": gamma,
             "max_depth": 4,
             "upper_bound": {
-                "type": "kullback-leibler",
-                "c": 2
+                "type": "hoeffding",
+                "c": 4
             },
             "lazy_tree_construction": True,
             "continuation_type": "uniform",
             # "env_preprocessors": [{"method": "simplify"}]
         },
+        # "kl-olop": {
+        #     "__class__": "<class 'rl_agents.agents.tree_search.olop.OLOPAgent'>",
+        #     "gamma": gamma,
+        #     "max_depth": 4,
+        #     "upper_bound": {
+        #         "type": "kullback-leibler",
+        #         "c": 2
+        #     },
+        #     "lazy_tree_construction": True,
+        #     "continuation_type": "uniform",
+        #     # "env_preprocessors": [{"method": "simplify"}]
+        # },
         "kl-olop-1": {
             "__class__": "<class 'rl_agents.agents.tree_search.olop.OLOPAgent'>",
             "gamma": gamma,
@@ -215,7 +218,7 @@ def evaluate(experiment):
 
 def prepare_experiments(budgets, seeds, path):
     # budgets = np.unique(np.logspace(*literal_eval(budgets)).astype(int))
-    budgets = np.logspace(2.0, 4.0, num=4)
+    budgets = np.logspace(1.0, 5.0, num=5)
     # budgets = np.array([500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000])
     agents = agent_configs()
 

@@ -3,6 +3,10 @@ import importlib
 import json
 import logging
 import gym
+import rl_agents.gym_toytext
+from rl_agents.environments.CustomEnv import CustomSimpleEnv, CustomComplexEnv, NChainEnv, RandomGrid
+import rl_agents.environments.CustomEnv as CustomEnv
+
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +64,16 @@ def load_environment(env_config):
     if "import_module" in env_config:
         __import__(env_config["import_module"])
     try:
-        env = gym.make(env_config['id'])
+        env_name = env_config['id']
+        env = None
+        if env_name == "FrozenLake-v1":
+            env = gym.make(env_name, map_name="4x4", is_slippery=False)
+        elif env_name == "RandomGrid":
+            env = RandomGrid()
+        elif env_name == "Taxi":
+            env = CustomEnv.generate_taxi('grid.txt')
+        else:
+            env = gym.make(env_config['id'])
     except KeyError:
         raise ValueError("The gym register id of the environment must be provided")
     except gym.error.UnregisteredEnv:

@@ -1,0 +1,4 @@
+{
+    "id": "RandomGrid",
+    "import_module": "gymnasium"
+}

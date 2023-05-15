@@ -6,7 +6,8 @@ setup(
     description='A collection of Reinforcement Learning agents',
     url='https://github.com/eleurent/rl-agents',
     author='Edouard Leurent',
-    author_email='eleurent@gmail.com',
+    maintainer='Tuan Dam',
+    author_email='eleurent@gmail.com; tuanquangdam@gmail.com',
     license='MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',

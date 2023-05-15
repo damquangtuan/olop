@@ -211,7 +211,7 @@ class OLOPNode(Node):
 
     def update(self, reward, done):
         if not 0 <= reward <= 1:
-            print ("reward: " + str(reward))
+            # print ("reward: " + str(reward))
             if reward < 0:
                 reward = 0
             # raise ValueError("This planner assumes that all rewards are normalized in [0, 1]")

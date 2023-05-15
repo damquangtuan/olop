@@ -1,0 +1,4 @@
+{
+    "id": "FrozenLake-v1",
+    "import_module": "gymnasium"
+}
